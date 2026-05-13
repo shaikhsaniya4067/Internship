@@ -1,0 +1,112 @@
+//WDriver.java
+
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.Text;
+import org.apache.hadoop.mapreduce.Job;
+import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
+import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
+
+public class WDriver {
+
+	public static void main(String[] args) throws Exception  {
+		// TODO Auto-generated method stub
+		Configuration c=new Configuration();
+		Job job = new Job(c,"WordCount");
+		job.setJarByClass(WDriver.class);
+		job.setMapperClass(WMapper.class);
+		job.setReducerClass(WReducer.class);
+		job.setOutputKeyClass(Text.class);
+		job.setOutputValueClass(IntWritable.class);
+		FileInputFormat.addInputPath(job, new Path(args[0]));
+		FileOutputFormat.setOutputPath(job, new Path(args[1]));
+		System.exit(job.waitForCompletion(true)?0:1);
+
+	}
+
+}
+---------------------------------------------------------------------------------------------------------------
+//WMapper.java
+import java.io.IOException;
+import java.util.StringTokenizer;
+
+import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.LongWritable;
+import org.apache.hadoop.io.Text;
+import org.apache.hadoop.mapreduce.Mapper;
+
+
+public class WMapper  extends Mapper<LongWritable, Text, Text, IntWritable> {
+
+	
+	
+public void map(LongWritable key, Text value, Context con) throws IOException, InterruptedException
+{
+	String[] words =  value.toString().split(",");
+	for( String word : words)
+	   con.write(new Text(word),new IntWritable(1));
+	
+}
+
+
+}
+}
+----------------------------------------------------------------------------------------------------------------
+//WReducer.java
+import java.io.IOException;
+import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.Text;
+import org.apache.hadoop.mapreduce.Reducer;
+
+
+public class WReducer  extends Reducer<Text, IntWritable, Text, IntWritable> {
+	
+	public void reduce(Text word, Iterable<IntWritable> values, Context con) throws IOException, InterruptedException
+
+	{
+
+	int sum = 0;
+	   for(IntWritable value : values)
+	   {
+	   sum += value.get();
+	   }
+	   con.write(word, new IntWritable(sum));
+	}
+
+}
+---------------------------------------------------------------------------------------------------------------
+1. create directory using: hdfs dfs -mkdir /TE
+2. create demo.txt file inside this hello world text should repeated save in local
+3. after this put file in Hadoop and run in terminal: hdfs dfs -put/-copyFromLocal <local path of file> /TE
+4. hadoop jar <jarfilename> <if package are in the class then do packagename/driverclassname> /TE/demo.txt /TE/output1 
+   ex: hadoop jar word.jar wc/WDriver /TE/demo.txt /TE/output1
+5. hdfs dfs -cat /TE/output1/part-r-00000
+---------------------------------------------------------------------------------------------------------------
+//jar file upload in eclipse go build path-> the configure build path-> add external jar->
+
+1)
+other location > Computer > usr > local > hadoop >
+share > hadoop > mapreduce
+
+    └── jobclient
+         └── hadoop-mapreduce-client-jobclient-3.3.6.jar
+
+    └── hadoop-mapreduce-client-core-3.3.6.jar
+    └── hadoop-mapreduce-client-common-3.3.6.jar
+
+2)
+
+other location > Computer > usr > local > hadoop > share
+> hadoop > hdfs
+
+    └── hadoop-hdfs-client-3.3.6.jar
+    └── hadoop-hdfs-3.3.6.jar
+
+3)
+
+other location > Computer > usr > local > hadoop > share
+> hadoop > common
+
+    └── hadoop-common-3.3.6.jar
+ 
