@@ -1,0 +1,68 @@
+1) create DB
+ex:create database TE;
+
+2) use DB
+  ex: use TE
+
+3) create table -
+
+create table table_name (fields)
+
+row format delimited
+fields terminated by ","
+stored as textfile;
+ex: create table flightinfo(<copy field from descp.txt) row format delimited fields terminated by ","
+stored as textfile;
+
+4) load table values from csv -
+
+load data local inpath "filepath"
+into table table-name;
+ex: load data local inpath "flight.csv"("filepath") into table flightinfo
+
+5) query -
+  ex: select * from flightinfo(tablename)
+
+6) index -
+
+create index index_name on table table_name(column) as 'compact' with deferred rebuild;
+
+7)Avg:
+select day_of_week,avg(dep_delay) from t2(tablename) group by day_of_week;
+
+8)indexing:
+create index idx1 on table t2(dest) as 'compact' with deferred rebuild;
+
+9)Avg:
+ select dest,avg(dep_delay) from t2(tablename) group by dest;
+
+OR
+10) creating external table:
+1) CREATE EXTERNAL TABLE IF NOT EXISTS
+external_airports (
+    airport_code STRING,
+    airport_name STRING,
+    city STRING,
+    state STRING
+)
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY ','
+STORED AS TEXTFILE;
+
+INSERT INTO TABLE external_airports
+VALUES ("CSTM", "Shivaji Maharaj", "mumbai", "MH");
+
+SELECT * FROM external_airports;
+
+
+2) Join:
+
+SELECT f.flight_num, f.origin, f.dest,
+       e.airport_name, e.city, e.state
+FROM flights f
+JOIN external_airports e
+ON (f.dest = e.airport_code);
+
+
+3) SELECT AVG(dep_delay) AS avg_departure_delay
+FROM flights;
