@@ -1,0 +1,95 @@
+1) Create Database
+CREATE DATABASE TE;
+
+2) Use Database
+USE TE;
+
+3) Create Flight Information Table
+CREATE TABLE flightinfo(fields of desption.txt file)
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY ','
+STORED AS TEXTFILE;
+
+4) Display Table Structure
+DESCRIBE flightinfo;
+
+5) Load CSV File into Table
+
+(Change path according to your system)
+
+LOAD DATA LOCAL INPATH '/home/hadoop/flight_info.csv'
+INTO TABLE flightinfo;
+
+6) View Table Data
+SELECT * FROM flightinfo;
+
+7) Alter Table if needed:
+
+(Add new column)
+
+ALTER TABLE flightinfo
+ADD COLUMNS (remarks STRING);
+
+8) Create External Table
+CREATE EXTERNAL TABLE IF NOT EXISTS:
+create external table external_airports (
+    airport_code STRING,
+    airport_name STRING,
+    city STRING,
+    state STRING
+)
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY ','
+STORED AS TEXTFILE;
+
+9) Insert Values into External Table
+INSERT INTO external_airports
+VALUES ('CSTM', 'Shivaji Maharaj Airport', 'Mumbai', 'MH');
+
+10) Display External Table Data
+SELECT * FROM external_airports;
+
+11) Join Tables
+SELECT f.flight_num,
+       f.origin,
+       f.dest,
+       e.airport_name,
+       e.city,
+       e.state
+FROM flightinfo f
+JOIN external_airports e
+ON (f.dest = e.airport_code);
+
+12) Create Index
+CREATE INDEX idx_dest
+ON TABLE flightinfo(dest)
+AS 'COMPACT'
+WITH DEFERRED REBUILD;
+
+13) Rebuild Index if needed:
+ALTER INDEX idx_dest
+ON flightinfo
+REBUILD;
+
+14) Average Departure Delay Per Day in 2008
+SELECT day_of_week,
+AVG(dep_delay) AS avg_departure_delay
+FROM flightinfo
+WHERE year = 2008
+GROUP BY day_of_week;
+
+15) Average Delay by Destination
+SELECT dest,
+AVG(dep_delay) AS avg_delay
+FROM flightinfo
+GROUP BY dest;
+
+16) Drop Table if needed:
+DROP TABLE external_airports;
+
+OR
+
+DROP TABLE flightinfo;
+
+
+
