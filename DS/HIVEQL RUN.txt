@@ -1,0 +1,207 @@
+Here is a **proper corrected HiveQL solution** for your practical using your `flight_info.csv` reference data .
+
+I renamed columns properly and included **all required parts (a–e)**.
+
+## 1) Create Database
+
+```sql
+CREATE DATABASE flight_management_db;
+
+SHOW DATABASES;
+
+USE flight_management_db;
+```
+
+---
+
+## 2) Create Main Flight Table
+
+(Proper column names from CSV)
+
+```sql
+CREATE TABLE flight_information (
+    flight_id INT,
+    airline_name STRING,
+    source_city STRING,
+    destination_city STRING,
+    departure_delay_minutes INT,
+    flight_date STRING
+)
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY ','
+STORED AS TEXTFILE;
+```
+
+---
+
+## 3) Create External Table
+
+```sql
+CREATE EXTERNAL TABLE flight_information_external (
+    flight_id INT,
+    airline_name STRING,
+    source_city STRING,
+    destination_city STRING,
+    departure_delay_minutes INT,
+    flight_date STRING
+)
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY ','
+STORED AS TEXTFILE
+LOCATION '/user/hive/flight_data/';
+```
+
+---
+
+## 4) Create Airline Reference Table
+
+(For JOIN operation)
+
+```sql
+CREATE TABLE airline_details (
+    airline_name STRING,
+    airline_country STRING
+)
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY ','
+STORED AS TEXTFILE;
+```
+
+---
+
+## 5) Insert Values into Airline Table
+
+```sql
+INSERT INTO airline_details VALUES
+('IndiGo','India'),
+('AirIndia','India'),
+('SpiceJet','India'),
+('Vistara','India');
+```
+
+---
+
+## 6) Load CSV Data into Main Table
+
+If file is on local system:
+
+```sql
+LOAD DATA LOCAL INPATH '/home/cloudera/Desktop/flight_info.csv'
+INTO TABLE flight_information;
+```
+
+---
+
+## 7) Insert New Flight Records
+
+```sql
+INSERT INTO flight_information VALUES
+(109,'IndiGo','Kolkata','Mumbai',30,'2026-04-22'),
+(110,'AirIndia','Bangalore','Mumbai',0,'2026-04-22');
+```
+
+---
+
+## 8) Alter Table (Add New Column)
+
+```sql
+ALTER TABLE flight_information
+ADD COLUMNS (flight_status STRING);
+```
+
+---
+
+## 9) View Table Structure
+
+```sql
+DESCRIBE flight_information;
+```
+
+---
+
+## 10) Join Tables
+
+```sql
+SELECT
+    f.flight_id,
+    f.airline_name,
+    f.source_city,
+    f.destination_city,
+    a.airline_country
+FROM flight_information f
+JOIN airline_details a
+ON f.airline_name = a.airline_name;
+```
+
+---
+
+## 11) Create Index
+
+```sql
+CREATE INDEX flight_index
+ON TABLE flight_information (flight_id)
+AS 'COMPACT'
+WITH DEFERRED REBUILD;
+```
+
+Rebuild index:
+
+```sql
+ALTER INDEX flight_index
+ON flight_information
+REBUILD;
+```
+
+---
+
+## 12) Find Average Departure Delay Per Day
+
+(Requirement e)
+
+```sql
+SELECT
+    flight_date,
+    AVG(departure_delay_minutes) AS average_departure_delay
+FROM flight_information
+GROUP BY flight_date;
+```
+
+Expected output using your data :
+
+```sql
+2026-04-20    7.5
+2026-04-21    15.0
+2026-04-22    15.0
+```
+
+---
+
+## 13) Show Data
+
+```sql
+SELECT * FROM flight_information;
+```
+
+---
+
+## 14) Drop Table
+
+```sql
+DROP TABLE flight_information;
+```
+
+Drop external table:
+
+```sql
+DROP TABLE flight_information_external;
+```
+
+---
+
+## 15) Drop Database
+
+```sql
+DROP DATABASE flight_management_db CASCADE;
+```
+
+---
